@@ -1,0 +1,90 @@
+# Compose para desarrollo local del área "Backend de dominio".
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_ADMIN_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD}
+      POSTGRES_DB: postgres
+      INVENTARIO_DB_PASSWORD: ${INVENTARIO_DB_PASSWORD}
+      CLIENTES_DB_PASSWORD: ${CLIENTES_DB_PASSWORD}
+      PEDIDOS_DB_PASSWORD: ${PEDIDOS_DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  inventario:
+    build: ./services/inventario
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: ${INVENTARIO_DB_NAME}
+      DB_USER: ${INVENTARIO_DB_USER}
+      DB_PASSWORD: ${INVENTARIO_DB_PASSWORD}
+      UMBRAL_STOCK_BAJO: ${UMBRAL_STOCK_BAJO}
+    ports:
+      - "5001:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  clientes:
+    build: ./services/clientes
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: ${CLIENTES_DB_NAME}
+      DB_USER: ${CLIENTES_DB_USER}
+      DB_PASSWORD: ${CLIENTES_DB_PASSWORD}
+    ports:
+      - "5002:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  pedidos:
+    build: ./services/pedidos
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: ${PEDIDOS_DB_NAME}
+      DB_USER: ${PEDIDOS_DB_USER}
+      DB_PASSWORD: ${PEDIDOS_DB_PASSWORD}
+      INVENTARIO_URL: http://inventario:5000
+    ports:
+      - "5003:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      inventario:
+        condition: service_started
+
+  reportes:
+    build: ./services/reportes
+    environment:
+      INVENTARIO_URL: http://inventario:5000
+      PEDIDOS_URL: http://pedidos:5000
+    ports:
+      - "5004:5000"
+    depends_on:
+      - inventario
+      - pedidos
+
+  catalogo:
+    build: ./services/catalogo
+    environment:
+      INVENTARIO_URL: http://inventario:5000
+    ports:
+      - "5005:5000"
+    depends_on:
+      - inventario
+
+volumes:
+  postgres_data:
