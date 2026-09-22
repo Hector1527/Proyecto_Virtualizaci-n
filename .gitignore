@@ -1,0 +1,13 @@
+.env
+__pycache__/
+*.pyc
+
+# Datos persistentes y archivos temporales locales
+postgres_data/
+tmp/
+output/
+
+# Credenciales o respaldos locales
+*.secret
+*.dump
+*.backup
