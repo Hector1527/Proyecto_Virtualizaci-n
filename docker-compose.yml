@@ -1,0 +1,133 @@
+# Compose final - Distribuidora El Quetzal
+# Área 3: Orquestación y publicación (Javier Ruano)
+# Uso en la VM:  docker compose up -d --build
+name: elquetzal
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_ADMIN_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD}
+      POSTGRES_DB: postgres
+      INVENTARIO_DB_NAME: ${INVENTARIO_DB_NAME}
+      INVENTARIO_DB_USER: ${INVENTARIO_DB_USER}
+      INVENTARIO_DB_PASSWORD: ${INVENTARIO_DB_PASSWORD}
+      CLIENTES_DB_NAME: ${CLIENTES_DB_NAME}
+      CLIENTES_DB_USER: ${CLIENTES_DB_USER}
+      CLIENTES_DB_PASSWORD: ${CLIENTES_DB_PASSWORD}
+      PEDIDOS_DB_NAME: ${PEDIDOS_DB_NAME}
+      PEDIDOS_DB_USER: ${PEDIDOS_DB_USER}
+      PEDIDOS_DB_PASSWORD: ${PEDIDOS_DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - elquetzal-net
+
+  inventario:
+    build: ./services/inventario
+    image: ${DOCKERHUB_USER}/elquetzal-inventario:${TAG}
+    restart: unless-stopped
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: ${INVENTARIO_DB_NAME}
+      DB_USER: ${INVENTARIO_DB_USER}
+      DB_PASSWORD: ${INVENTARIO_DB_PASSWORD}
+      UMBRAL_STOCK_BAJO: ${UMBRAL_STOCK_BAJO}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - elquetzal-net
+
+  clientes:
+    build: ./services/clientes
+    image: ${DOCKERHUB_USER}/elquetzal-clientes:${TAG}
+    restart: unless-stopped
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: ${CLIENTES_DB_NAME}
+      DB_USER: ${CLIENTES_DB_USER}
+      DB_PASSWORD: ${CLIENTES_DB_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - elquetzal-net
+
+  pedidos:
+    build: ./services/pedidos
+    image: ${DOCKERHUB_USER}/elquetzal-pedidos:${TAG}
+    restart: unless-stopped
+    environment:
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: ${PEDIDOS_DB_NAME}
+      DB_USER: ${PEDIDOS_DB_USER}
+      DB_PASSWORD: ${PEDIDOS_DB_PASSWORD}
+      INVENTARIO_URL: http://inventario:5000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      inventario:
+        condition: service_started
+    networks:
+      - elquetzal-net
+
+  reportes:
+    build: ./services/reportes
+    image: ${DOCKERHUB_USER}/elquetzal-reportes:${TAG}
+    restart: unless-stopped
+    environment:
+      INVENTARIO_URL: http://inventario:5000
+      PEDIDOS_URL: http://pedidos:5000
+    depends_on:
+      - inventario
+      - pedidos
+    networks:
+      - elquetzal-net
+
+  catalogo:
+    build: ./services/catalogo
+    image: ${DOCKERHUB_USER}/elquetzal-catalogo:${TAG}
+    restart: unless-stopped
+    environment:
+      INVENTARIO_URL: http://inventario:5000
+    depends_on:
+      - inventario
+    networks:
+      - elquetzal-net
+
+  # Puerta única: único servicio con puerto publicado en la VM
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    image: ${DOCKERHUB_USER}/elquetzal-gateway:${TAG}
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - catalogo
+      - inventario
+      - clientes
+      - pedidos
+      - reportes
+    networks:
+      - elquetzal-net
+
+networks:
+  elquetzal-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
