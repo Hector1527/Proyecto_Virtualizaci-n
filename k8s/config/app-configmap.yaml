@@ -1,0 +1,18 @@
+# Template: render with scripts/configure-project.sh before applying.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config-__ID_EQUIPO__
+  namespace: proyecto-2-__ID_EQUIPO__
+  labels:
+    project: el-quetzal
+    team: __ID_EQUIPO__
+data:
+  DB_HOST: postgres-__ID_EQUIPO__
+  DB_PORT: '5432'
+  INVENTARIO_DB_NAME: inventario_db
+  CLIENTES_DB_NAME: clientes_db
+  PEDIDOS_DB_NAME: pedidos_db
+  UMBRAL_STOCK_BAJO: '10'
+  INVENTARIO_URL: http://inventario-__ID_EQUIPO__:5000
+  PEDIDOS_URL: http://pedidos-__ID_EQUIPO__:5000

@@ -1,6 +1,10 @@
--- Valores de demostración. Reemplazar por los carnés reales del grupo antes de la entrega.
+-- Grupo Glitch Tec: integrantes reales, trazables desde GET /api/clientes.
 INSERT INTO clientes (carne, nombre, contacto)
 VALUES
-    ('1234567', 'Integrante de prueba 1', 'prueba1@elquetzal.local'),
-    ('7654321', 'Integrante de prueba 2', 'prueba2@elquetzal.local')
-ON CONFLICT (carne) DO NOTHING;
+    ('1072123', 'Mario Arévalo', NULL),
+    ('1185023', 'Jonatán Chávez', NULL),
+    ('1207022', 'Javier Ruano', NULL),
+    ('1184523', 'Javier Aldana', NULL),
+    ('1304223', 'Hector Pérez', NULL),
+    ('1143323', 'José Rosales', NULL)
+ON CONFLICT (carne) DO UPDATE SET nombre = EXCLUDED.nombre;

@@ -1,0 +1,5 @@
+# Gateway builds use the repository root; only these files enter its context.
+**
+!gateway/
+!gateway/Dockerfile
+!gateway/nginx.conf

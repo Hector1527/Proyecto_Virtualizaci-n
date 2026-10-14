@@ -5,6 +5,37 @@ import AppToast from '../components/AppToast.vue'
 
 const cargando = ref(true)
 const actualizando = ref(false)
+const integrantes = ref([])
+const cargandoIntegrantes = ref(true)
+const errorIntegrantes = ref('')
+const carnesEquipo = ['1072123', '1185023', '1207022', '1184523', '1304223', '1143323']
+
+async function cargarIntegrantes() {
+  cargandoIntegrantes.value = true
+  errorIntegrantes.value = ''
+  try {
+    const response = await fetch('/api/clientes')
+    if (!response.ok) throw new Error('No se pudieron consultar los integrantes.')
+    const clientes = await response.json()
+    if (!Array.isArray(clientes)) throw new Error('Respuesta de clientes no válida.')
+    integrantes.value = carnesEquipo
+      .map((carne) => clientes.find((cliente) => String(cliente.carne) === carne))
+      .filter(Boolean)
+    if (integrantes.value.length !== carnesEquipo.length) {
+      errorIntegrantes.value = 'Faltan integrantes en la base de datos. Revisa los datos iniciales.'
+    }
+  } catch (err) {
+    integrantes.value = []
+    errorIntegrantes.value = err instanceof Error ? err.message : 'No se pudo consultar clientes.'
+  } finally {
+    cargandoIntegrantes.value = false
+  }
+}
+
+function actualizarPanel() {
+  cargarDashboard(true)
+  cargarIntegrantes()
+}
 
 const dashboard = ref({
   total_productos: 0,
@@ -185,6 +216,7 @@ function obtenerStockProducto(item) {
 
 onMounted(() => {
   cargarDashboard()
+  cargarIntegrantes()
 })
 
 onBeforeUnmount(() => {
@@ -237,7 +269,7 @@ onBeforeUnmount(() => {
         <button
           class="refresh-button"
           :disabled="actualizando"
-          @click="cargarDashboard(true)"
+          @click="actualizarPanel"
         >
           <span
             class="refresh-icon"
@@ -252,6 +284,19 @@ onBeforeUnmount(() => {
       <div class="hero-summary">
         {{ estadoGeneral.text }}
       </div>
+    </section>
+
+    <section class="team-card" aria-labelledby="team-title">
+      <h2 id="team-title">Grupo Glitch Tec</h2>
+      <p>Integrantes registrados en la base de datos de El Quetzal.</p>
+      <p v-if="cargandoIntegrantes" role="status">Consultando integrantes...</p>
+      <p v-if="errorIntegrantes" role="alert">{{ errorIntegrantes }}</p>
+      <ul v-if="!cargandoIntegrantes && integrantes.length" class="team-list">
+        <li v-for="integrante in integrantes" :key="integrante.carne">
+          <strong>{{ integrante.nombre }}</strong>
+          <span>Carné: {{ integrante.carne }}</span>
+        </li>
+      </ul>
     </section>
 
     <!-- KPIs -->
@@ -491,6 +536,25 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+.team-card {
+  padding: 24px;
+  margin-bottom: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+.team-card h2 { margin: 0 0 8px; }
+.team-card p { color: var(--muted); }
+.team-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  list-style: none;
+  padding: 0;
+  margin: 18px 0 0;
+}
+.team-list li { display: flex; flex-direction: column; gap: 6px; }
+.team-list span { color: var(--green-700); }
 .dashboard-page {
   display: flex;
   flex-direction: column;

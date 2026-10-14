@@ -1,0 +1,20 @@
+# Template: render with scripts/configure-project.sh before applying.
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway-loadbalancer-__ID_EQUIPO__
+  namespace: proyecto-2-__ID_EQUIPO__
+  labels:
+    app: gateway
+    project: el-quetzal
+    team: __ID_EQUIPO__
+spec:
+  type: LoadBalancer
+  selector:
+    app: gateway
+    project: el-quetzal
+    team: __ID_EQUIPO__
+  ports:
+  - name: http
+    port: 8080
+    targetPort: http

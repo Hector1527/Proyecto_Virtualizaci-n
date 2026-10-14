@@ -1,0 +1,20 @@
+# Template: render with scripts/configure-project.sh before applying.
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalogo-__ID_EQUIPO__
+  namespace: proyecto-2-__ID_EQUIPO__
+  labels:
+    app: catalogo
+    project: el-quetzal
+    team: __ID_EQUIPO__
+spec:
+  type: ClusterIP
+  selector:
+    app: catalogo
+    project: el-quetzal
+    team: __ID_EQUIPO__
+  ports:
+  - name: http
+    port: 5000
+    targetPort: http

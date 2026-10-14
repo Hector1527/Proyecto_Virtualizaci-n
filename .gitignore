@@ -11,3 +11,17 @@ output/
 *.secret
 *.dump
 *.backup
+
+# Kubernetes credentials and generated files
+.env.*
+!.env.example
+!*.env.example
+secrets/
+credentials/
+*secret*.yaml
+*secret*.yml
+*.secret
+.generated/
+.npm-cache/
+.tools/
+*.tmp

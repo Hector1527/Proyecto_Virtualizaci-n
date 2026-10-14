@@ -1,0 +1,17 @@
+# Template: render with scripts/configure-project.sh before applying.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-data-__ID_EQUIPO__
+  namespace: proyecto-2-__ID_EQUIPO__
+  labels:
+    app: postgres
+    project: el-quetzal
+    team: __ID_EQUIPO__
+spec:
+  accessModes:
+  - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi

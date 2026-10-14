@@ -1,0 +1,157 @@
+# Template: render with scripts/configure-project.sh before applying.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-__ID_EQUIPO__
+  namespace: proyecto-2-__ID_EQUIPO__
+  labels:
+    app: postgres
+    project: el-quetzal
+    team: __ID_EQUIPO__
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+      project: el-quetzal
+      team: __ID_EQUIPO__
+  template:
+    metadata:
+      labels:
+        app: postgres
+        project: el-quetzal
+        team: __ID_EQUIPO__
+    spec:
+      hostname: postgres-__ID_EQUIPO__
+      containers:
+      - name: postgres
+        image: postgres:16
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: postgres
+          containerPort: 5432
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            memory: 512Mi
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/postgresql/data
+        - name: init
+          mountPath: /docker-entrypoint-initdb.d
+          readOnly: true
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - pg_isready -h 127.0.0.1 -U "$POSTGRES_USER" -d postgres
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - pg_isready -h 127.0.0.1 -U "$POSTGRES_USER" -d postgres
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+          initialDelaySeconds: 20
+        startupProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - pg_isready -h 127.0.0.1 -U "$POSTGRES_USER" -d postgres
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 60
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials-__ID_EQUIPO__
+              key: POSTGRES_ADMIN_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials-__ID_EQUIPO__
+              key: POSTGRES_ADMIN_PASSWORD
+        - name: POSTGRES_DB
+          value: postgres
+        - name: PGHOST
+          value: /var/run/postgresql
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        - name: INVENTARIO_DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-config-__ID_EQUIPO__
+              key: INVENTARIO_DB_NAME
+        - name: INVENTARIO_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials-__ID_EQUIPO__
+              key: INVENTARIO_DB_USER
+        - name: INVENTARIO_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials-__ID_EQUIPO__
+              key: INVENTARIO_DB_PASSWORD
+        - name: CLIENTES_DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-config-__ID_EQUIPO__
+              key: CLIENTES_DB_NAME
+        - name: CLIENTES_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials-__ID_EQUIPO__
+              key: CLIENTES_DB_USER
+        - name: CLIENTES_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials-__ID_EQUIPO__
+              key: CLIENTES_DB_PASSWORD
+        - name: PEDIDOS_DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-config-__ID_EQUIPO__
+              key: PEDIDOS_DB_NAME
+        - name: PEDIDOS_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials-__ID_EQUIPO__
+              key: PEDIDOS_DB_USER
+        - name: PEDIDOS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials-__ID_EQUIPO__
+              key: PEDIDOS_DB_PASSWORD
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: postgres-data-__ID_EQUIPO__
+      - name: init
+        configMap:
+          name: postgres-init-__ID_EQUIPO__
+          defaultMode: 365
+          items:
+          - key: init-databases.sh
+            path: init-databases.sh
+          - key: schema-clientes.sql
+            path: schema/clientes.sql
+          - key: schema-inventario.sql
+            path: schema/inventario.sql
+          - key: schema-pedidos.sql
+            path: schema/pedidos.sql
+          - key: seeds-clientes.sql
+            path: seeds/clientes.sql
+          - key: seeds-inventario.sql
+            path: seeds/inventario.sql
+  strategy:
+    type: Recreate

@@ -1,0 +1,72 @@
+# Template: render with scripts/configure-project.sh before applying.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reportes-__ID_EQUIPO__
+  namespace: proyecto-2-__ID_EQUIPO__
+  labels:
+    app: reportes
+    project: el-quetzal
+    team: __ID_EQUIPO__
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: reportes
+      project: el-quetzal
+      team: __ID_EQUIPO__
+  template:
+    metadata:
+      labels:
+        app: reportes
+        project: el-quetzal
+        team: __ID_EQUIPO__
+    spec:
+      hostname: reportes-__ID_EQUIPO__
+      containers:
+      - name: reportes
+        image: javierini/elquetzal-reportes:2.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 5000
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+        readinessProbe:
+          httpGet:
+            path: /api/reportes/health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /api/reportes/health
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /api/reportes/health
+            port: http
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 36
+        env:
+        - name: INVENTARIO_URL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config-__ID_EQUIPO__
+              key: INVENTARIO_URL
+        - name: PEDIDOS_URL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config-__ID_EQUIPO__
+              key: PEDIDOS_URL
