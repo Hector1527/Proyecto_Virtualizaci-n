@@ -1,13 +1,13 @@
-# Template: render with scripts/configure-project.sh before applying.
+# Final manifest: apply directly from k8s/ for Glitch Tec (glitch-tec).
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: postgres-data-__ID_EQUIPO__
-  namespace: proyecto-2-__ID_EQUIPO__
+  name: postgres-data-glitch-tec
+  namespace: proyecto-2-glitch-tec
   labels:
     app: postgres
     project: el-quetzal
-    team: __ID_EQUIPO__
+    team: glitch-tec
 spec:
   accessModes:
   - ReadWriteOnce

@@ -1,28 +1,28 @@
-# Template: render with scripts/configure-project.sh before applying.
+# Final manifest: apply directly from k8s/ for Glitch Tec (glitch-tec).
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: gateway-__ID_EQUIPO__
-  namespace: proyecto-2-__ID_EQUIPO__
+  name: gateway-glitch-tec
+  namespace: proyecto-2-glitch-tec
   labels:
     app: gateway
     project: el-quetzal
-    team: __ID_EQUIPO__
+    team: glitch-tec
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: gateway
       project: el-quetzal
-      team: __ID_EQUIPO__
+      team: glitch-tec
   template:
     metadata:
       labels:
         app: gateway
         project: el-quetzal
-        team: __ID_EQUIPO__
+        team: glitch-tec
     spec:
-      hostname: gateway-__ID_EQUIPO__
+      hostname: gateway-glitch-tec
       containers:
       - name: gateway
         image: javierini/elquetzal-gateway:2.0
@@ -66,7 +66,7 @@ spec:
       volumes:
       - name: nginx
         configMap:
-          name: gateway-config-__ID_EQUIPO__
+          name: gateway-config-glitch-tec
           items:
           - key: nginx.conf
             path: default.conf

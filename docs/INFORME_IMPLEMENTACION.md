@@ -1,5 +1,7 @@
 # Informe de implementación del Proyecto 2
 
+Estado final: equipo **Glitch Tec**, ID confirmado **`glitch-tec`**, namespace **`proyecto-2-glitch-tec`**, repositorio final previsto **`proyecto_2_glitch-tec`**. Los 22 manifiestos versionados en `k8s/` se despliegan directamente. Las siete imágenes `javierini/elquetzal-*:2.0` fueron publicadas según confirmación del equipo; esta etapa no las reconstruye ni modifica. Los apartados 2 y 3 describen la migración inicial; la lista exacta de esta finalización se incluye al final.
+
 ## 1. Rama utilizada
 
 `project2/kubernetes`, creada desde el estado de `main` en `2e3d9baf557ea3c0f9fda9fbccb56c949dfbd884`. Repositorio existente `Hector1527/Proyecto_Virtualizaci-n`; no se creó otro repositorio ni se hizo merge. La referencia `main` se conserva.
@@ -77,14 +79,14 @@ Navegador → NodePort 30080 o LoadBalancer 8080 → gateway nginx 80 → Servic
 
 | Criterio | Implementación entregada | Evidencia real pendiente |
 |---|---|---|
-| A | namespace, ocho Deployments, siete imágenes propias preparadas | imágenes publicadas, Pods Running/Ready, get all, hostname |
+| A | namespace, ocho Deployments, siete imágenes propias publicadas (confirmado por el equipo) | capturas de imágenes, Pods Running/Ready, get all, hostname |
 | B | PVC y montaje de datos, PostgreSQL una réplica Recreate | dato antes/después de eliminar solo el Pod |
 | C | ConfigMaps, creación local de Secret, keyRefs y variables reales | conexión/CRUD con configuración desplegada sin mostrar passwords |
 | D | réplicas iniciales 1, guía de edición YAML a 3 y apply | tres Pods, eliminación y reemplazo del ReplicaSet |
 | E | siete ClusterIP, NodePort, LoadBalancer, gateway por DNS, fallback SPA | endpoints, acceso real host, EXTERNAL-IP, rutas y respaldo |
 | F | CRUD Inventario conservado, seed real y Dashboard por API | CRUD navegador servido por k3s y seis carnés visibles |
 
-## 6. Imágenes que deberán construirse/publicarse
+## 6. Imágenes publicadas y conservadas
 
 ```text
 javierini/elquetzal-catalogo:2.0
@@ -96,7 +98,7 @@ javierini/elquetzal-frontend:2.0
 javierini/elquetzal-gateway:2.0
 ```
 
-PostgreSQL usa `postgres:16` y el initContainer `busybox:1.37`. Se preparó build/push para las siete imágenes. **No se autenticó ni publicó ninguna imagen.** La construcción/publicación puede realizarse fuera de la VM; no se coloca entre las tareas que requieren únicamente VM.
+PostgreSQL usa `postgres:16` y el initContainer `busybox:1.37`. El equipo confirmó la publicación correcta de las siete imágenes anteriores. Esta finalización conserva exactamente sus referencias y no ejecuta builds, login ni push de imágenes. El script de build/push queda como utilidad de mantenimiento.
 
 ## 7. Valores reales utilizados
 
@@ -104,14 +106,14 @@ Grupo Glitch Tec; Docker Hub `javierini`; tag `2.0`; motor PostgreSQL 16; bases 
 
 Integrantes: Mario Arévalo 1072123, Jonatán Chávez 1185023, Javier Ruano 1207022, Javier Aldana 1184523, Hector Pérez 1304223 y José Rosales 1143323. No se inventaron contactos. Los nombres mostrados en Dashboard se leen de PostgreSQL por clientes. No se generaron ni almacenaron credenciales reales.
 
-## 8. Placeholders y preparativos pendientes fuera de VM
+## 8. Identidad final y preparativos restantes
 
-- Confirmar `__ID_EQUIPO__`; mantenerlo en plantillas hasta entonces. `glitch-tec` solo es la alternativa si no existe ID oficial.
-- Generar copias configuradas con ID DNS válido, sin sustituir los originales. `validacion-local` se usó exclusivamente para comprobaciones locales y no es el ID del equipo.
-- Construir/publicar imágenes con Docker operativo y autenticación disponible.
-- Crear usuarios/passwords privados para la instalación; la plantilla está vacía.
-- Obtener IP real y credenciales de acceso de la VM por los responsables; no hay valores inventados.
-- Mover después al repositorio `proyecto_2_<idEquipo>` cuando el equipo lo acuerde, sin crear otro ahora.
+- Equipo: Glitch Tec; ID confirmado: `glitch-tec`; namespace: `proyecto-2-glitch-tec`.
+- `k8s/`, nginx y scripts de despliegue/validación usan nombres finales sin placeholders ni sustituciones.
+- Las siete imágenes `:2.0` están publicadas según el equipo; no requieren reconstrucción ni modificación.
+- Crear usuarios/passwords privados para la instalación; la plantilla está vacía y el Secret permanece fuera del repositorio.
+- Obtener IP real y acceso a la VM por los responsables; no hay valores inventados.
+- Mover después al repositorio `proyecto_2_glitch-tec` cuando el equipo lo acuerde, sin crear otro ahora.
 - Tras reunir capturas reales, exportar el PDF final de evidencias A-F exigido por el docente. No se fabricó un PDF con supuestas evidencias.
 
 ## 9. Pruebas ejecutadas
@@ -121,7 +123,7 @@ Integrantes: Mario Arévalo 1072123, Jonatán Chávez 1185023, Javier Ruano 1207
 - `npm run build` en frontend: **correcto**, Vite compiló 33 módulos y generó dist.
 - ESLint directo sobre `src/views/DashboardView.vue` desde frontend: **correcto**, sin errores. No se ejecutó el lint global con `--fix` para alterar código ajeno a la migración.
 - Validador Python sobre los **22 manifiestos**: **correcto**. YAML, DNS, selector/labels, puertos, ocho Deployments, nueve Services, imágenes, rutas health existentes, variables contra AST Python, ConfigMap/Secret/PVC, mounts, SQL, socket, probes, fallback SPA y carnés.
-- Configuración con `validacion-local` y validación de los YAML generados: **correcto**. Las plantillas conservaron el token.
+- En la migración inicial se comprobó el render con un ID temporal. La finalización reemplaza ese mecanismo por validación directa de `k8s/` con `glitch-tec`.
 - Casos de IDs válidos e inválidos: **correctos**, incluyendo underscore, mayúsculas, extremos con guion, exceso de longitud y traversal rechazados.
 - Lector de credenciales con valores de prueba, sin datos reales: **correcto**. Ocho claves, prioridad de entorno, faltantes, duplicados, claves desconocidas y caracteres/inyección rechazados antes de escribir.
 - `create-secret.sh` con **kubectl simulado**: **correcto**. Namespace antes del Secret, ocho claves transmitidas por archivo temporal y stdin, sin passwords en argumentos. Esto no acredita la creación real en k3s.
@@ -133,7 +135,7 @@ Integrantes: Mario Arévalo 1072123, Jonatán Chávez 1185023, Javier Ruano 1207
 ## 10. Pruebas que fallaron o no pudieron ejecutarse
 
 - `kubectl apply --dry-run=client -R -f .generated/validacion-local/k8s` **falló**: el contexto local apunta a `https://kubernetes.docker.internal:6443`, cuyo DNS/API no está disponible. No se ocultó con `--validate=false` ni se confundió con un despliegue exitoso.
-- `docker version` encontró el cliente pero **no el motor**: falta la tubería `dockerDesktopLinuxEngine`. No fue posible ejecutar builds ni `nginx -t` dentro de imágenes. Queda pendiente con Docker operativo, también realizable fuera de VM.
+- `docker version` encontró el cliente pero **no el motor**: falta la tubería `dockerDesktopLinuxEngine`. Durante la migración inicial no fue posible ejecutar builds ni `nginx -t` dentro de imágenes. Para la finalización el equipo confirmó las imágenes publicadas y pidió no reconstruirlas; `nginx -t` en el Pod queda para la VM.
 - El sandbox inicialmente bloqueó Git/Bash y DNS de descarga; clonación e instalación con permisos ampliados y comprobación Bash posterior sí se completaron. La prueba auxiliar de credenciales usó después un temporal dentro del workspace y pasó.
 - Un intento auxiliar de `npx` desde la raíz sin dependencias locales se interrumpió; se sustituyó por ESLint instalado directamente en frontend, que pasó. No es un fallo del frontend compilado.
 
@@ -146,7 +148,7 @@ Gateway y frontend unidos; carnés ficticios; falta de UI para mostrar clientes;
 ## 12. Decisiones técnicas
 
 - Mantener motor, schemas, servicios y contratos; separar únicamente despliegue de Vue/gateway y agregar evidencia de integrantes.
-- Usar DNS válido en recursos finales y render controlado del token a una carpeta ignorada, con ID de máximo 40 caracteres.
+- Usar DNS válido con `glitch-tec` en todos los recursos y manifiestos finales versionados en `k8s/`; el flujo normal no genera ni sustituye nombres.
 - Secret externo con ocho claves; password obligatorio y compatible con bootstrap/URI heredados, sin reescribir Python.
 - Proyectar un ConfigMap con rutas `schema/`/`seeds/`, script ejecutable, `PGHOST` socket y SQL sincronizado desde fuentes originales.
 - PostgreSQL único con Recreate, PGDATA dentro del PVC y probes TCP que no aceptan el servidor temporal del bootstrap.
@@ -154,6 +156,64 @@ Gateway y frontend unidos; carnés ficticios; falta de UI para mostrar clientes;
 - LoadBalancer 8080 para evitar conflicto habitual con Traefik. No asignar una EXTERNAL-IP fija.
 - Imágenes frontend/gateway separadas, gateway con ConfigMap al ejecutar, `.dockerignore` para contextos de build limpios.
 - Pruebas funcionales reales y evidencias reservadas para el entorno k3s; guía explícita de port-forward/SSH como respaldo.
+
+## Finalización con idEquipo confirmado
+
+Esta etapa modifica únicamente nombres del equipo, scripts que usaban copias generadas y documentación. Se conservan arquitectura, réplicas iniciales, puertos, rutas, Dockerfiles, código de negocio, schemas/seeds y las siete referencias de imagen `javierini/elquetzal-*:2.0`. No se crean archivos versionados nuevos ni se versiona el Secret.
+
+### Archivos modificados en esta finalización
+
+34 archivos existentes:
+
+```text
+README.md
+README_PROYECTO2.md
+docs/AUDITORIA_PROYECTO1.md
+docs/EVIDENCIAS.md
+docs/INFORME_IMPLEMENTACION.md
+docs/VALIDACION_VM.md
+gateway/nginx.conf
+k8s/app/catalogo-deployment.yaml
+k8s/app/clientes-deployment.yaml
+k8s/app/frontend-deployment.yaml
+k8s/app/inventario-deployment.yaml
+k8s/app/pedidos-deployment.yaml
+k8s/app/reportes-deployment.yaml
+k8s/config/app-configmap.yaml
+k8s/config/postgres-init-configmap.yaml
+k8s/db/postgres-deployment.yaml
+k8s/db/postgres-pvc.yaml
+k8s/db/postgres-service.yaml
+k8s/gateway/gateway-configmap.yaml
+k8s/gateway/gateway-deployment.yaml
+k8s/gateway/gateway-loadbalancer.yaml
+k8s/gateway/gateway-nodeport.yaml
+k8s/namespace.yaml
+k8s/services/catalogo-service.yaml
+k8s/services/clientes-service.yaml
+k8s/services/frontend-service.yaml
+k8s/services/inventario-service.yaml
+k8s/services/pedidos-service.yaml
+k8s/services/reportes-service.yaml
+scripts/configure-project.sh
+scripts/create-secret.sh
+scripts/project.py
+scripts/validate-manifests.py
+scripts/validate-manifests.sh
+```
+
+### Validaciones de finalización
+
+- **Correcto:** validación directa de los 22 YAML en `k8s/`, tanto por defecto como indicando el directorio explícitamente: DNS, labels/selectors, hostnames, namespace, imágenes, puertos, probes, variables, ConfigMaps/Secret/PVC, mounts, SQL, SPA y carnés.
+- **Correcto:** comparación semántica de cada YAML con el commit anterior: la única diferencia de contenido es la sustitución del ID. nginx conserva exactamente rutas, puertos y headers al sustituir el ID.
+- **Correcto:** ningún cambio en frontend, servicios, bootstrap SQL/seeds, Dockerfiles, Compose, configuración de imágenes ni lector de credenciales. No se reconstruyen ni modifican imágenes.
+- **Correcto:** búsqueda en todos los archivos versionados sin encontrar el antiguo placeholder; no hay credenciales reales ni Secrets versionados. Los scripts de despliegue/validación y la guía de VM no dependen de carpetas generadas.
+- **Correcto:** sintaxis Python y Bash, `validate-manifests.sh`, comprobación opcional del ID final y rechazo de un ID distinto sin modificar archivos.
+- **Correcto:** `create-secret.sh` con kubectl simulado utiliza directamente `k8s/namespace.yaml`, aplica el namespace antes del Secret final y no expone valores. Es una prueba local, no creación real en k3s.
+- **Correcto:** formato del diff comprobado con `git diff --check`.
+- **Falló por entorno:** `kubectl --request-timeout=5s apply --dry-run=client -R -f k8s` intentado contra el contexto local; la API `kubernetes.docker.internal:6443` no está disponible. Debe repetirse en la VM. No se oculta ese resultado ni se afirma un despliegue real.
+
+La rama de entrega sigue siendo `project2/kubernetes`; no se hace merge ni se modifica `main`. La publicación de las siete imágenes está confirmada por el equipo y no se volvió a ejecutar desde esta etapa.
 
 ## PENDIENTE ÚNICAMENTE EN LA VM
 

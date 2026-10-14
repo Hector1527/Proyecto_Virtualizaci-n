@@ -1,6 +1,6 @@
 # Proyecto de Virtualización - El Quetzal
 
-> **Proyecto 2 / Kubernetes:** instrucciones actuales en [README_PROYECTO2.md](README_PROYECTO2.md), despliegue en [docs/VALIDACION_VM.md](docs/VALIDACION_VM.md). Lo que sigue conserva la documentación histórica del Proyecto 1; Compose es referencia histórica y no sirve como demostración del Proyecto 2. Los carnés de prueba ya fueron reemplazados y el gateway de esta rama ahora usa Services Kubernetes.
+> **Proyecto 2 / Kubernetes — Glitch Tec:** ID confirmado `glitch-tec`, namespace `proyecto-2-glitch-tec`, repositorio final previsto `proyecto_2_glitch-tec`. Los manifiestos finales se despliegan directamente desde `k8s/` y las siete imágenes `javierini/elquetzal-*:2.0` ya están publicadas según el equipo. Instrucciones actuales en [README_PROYECTO2.md](README_PROYECTO2.md), despliegue en [docs/VALIDACION_VM.md](docs/VALIDACION_VM.md). Lo que sigue conserva la documentación histórica del Proyecto 1; Compose es referencia histórica y no sirve como demostración del Proyecto 2. Los carnés de prueba ya fueron reemplazados y el gateway de esta rama ahora usa Services Kubernetes.
 
 Aplicación web para gestionar inventario y pedidos de Distribuidora El Quetzal sobre una infraestructura virtualizada.
 

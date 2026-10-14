@@ -1,28 +1,28 @@
-# Template: render with scripts/configure-project.sh before applying.
+# Final manifest: apply directly from k8s/ for Glitch Tec (glitch-tec).
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: inventario-__ID_EQUIPO__
-  namespace: proyecto-2-__ID_EQUIPO__
+  name: inventario-glitch-tec
+  namespace: proyecto-2-glitch-tec
   labels:
     app: inventario
     project: el-quetzal
-    team: __ID_EQUIPO__
+    team: glitch-tec
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: inventario
       project: el-quetzal
-      team: __ID_EQUIPO__
+      team: glitch-tec
   template:
     metadata:
       labels:
         app: inventario
         project: el-quetzal
-        team: __ID_EQUIPO__
+        team: glitch-tec
     spec:
-      hostname: inventario-__ID_EQUIPO__
+      hostname: inventario-glitch-tec
       containers:
       - name: inventario
         image: javierini/elquetzal-inventario:2.0
@@ -63,32 +63,32 @@ spec:
         - name: DB_HOST
           valueFrom:
             configMapKeyRef:
-              name: app-config-__ID_EQUIPO__
+              name: app-config-glitch-tec
               key: DB_HOST
         - name: DB_PORT
           valueFrom:
             configMapKeyRef:
-              name: app-config-__ID_EQUIPO__
+              name: app-config-glitch-tec
               key: DB_PORT
         - name: DB_NAME
           valueFrom:
             configMapKeyRef:
-              name: app-config-__ID_EQUIPO__
+              name: app-config-glitch-tec
               key: INVENTARIO_DB_NAME
         - name: DB_USER
           valueFrom:
             secretKeyRef:
-              name: db-credentials-__ID_EQUIPO__
+              name: db-credentials-glitch-tec
               key: INVENTARIO_DB_USER
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: db-credentials-__ID_EQUIPO__
+              name: db-credentials-glitch-tec
               key: INVENTARIO_DB_PASSWORD
         - name: UMBRAL_STOCK_BAJO
           valueFrom:
             configMapKeyRef:
-              name: app-config-__ID_EQUIPO__
+              name: app-config-glitch-tec
               key: UMBRAL_STOCK_BAJO
       initContainers:
       - name: wait-postgres
@@ -102,12 +102,12 @@ spec:
         - name: DB_HOST
           valueFrom:
             configMapKeyRef:
-              name: app-config-__ID_EQUIPO__
+              name: app-config-glitch-tec
               key: DB_HOST
         - name: DB_PORT
           valueFrom:
             configMapKeyRef:
-              name: app-config-__ID_EQUIPO__
+              name: app-config-glitch-tec
               key: DB_PORT
         resources:
           requests:

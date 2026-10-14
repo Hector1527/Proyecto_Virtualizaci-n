@@ -1,19 +1,19 @@
-# Template: render with scripts/configure-project.sh before applying.
+# Final manifest: apply directly from k8s/ for Glitch Tec (glitch-tec).
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres-__ID_EQUIPO__
-  namespace: proyecto-2-__ID_EQUIPO__
+  name: postgres-glitch-tec
+  namespace: proyecto-2-glitch-tec
   labels:
     app: postgres
     project: el-quetzal
-    team: __ID_EQUIPO__
+    team: glitch-tec
 spec:
   type: ClusterIP
   selector:
     app: postgres
     project: el-quetzal
-    team: __ID_EQUIPO__
+    team: glitch-tec
   ports:
   - name: postgres
     port: 5432

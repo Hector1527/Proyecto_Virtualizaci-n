@@ -1,19 +1,19 @@
-# Template: render with scripts/configure-project.sh before applying.
+# Final manifest: apply directly from k8s/ for Glitch Tec (glitch-tec).
 apiVersion: v1
 kind: Service
 metadata:
-  name: gateway-nodeport-__ID_EQUIPO__
-  namespace: proyecto-2-__ID_EQUIPO__
+  name: gateway-nodeport-glitch-tec
+  namespace: proyecto-2-glitch-tec
   labels:
     app: gateway
     project: el-quetzal
-    team: __ID_EQUIPO__
+    team: glitch-tec
 spec:
   type: NodePort
   selector:
     app: gateway
     project: el-quetzal
-    team: __ID_EQUIPO__
+    team: glitch-tec
   ports:
   - name: http
     port: 80

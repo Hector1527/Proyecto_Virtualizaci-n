@@ -19,19 +19,13 @@ Grupo **Glitch Tec**:
 
 Los registros se siembran en `clientes_db`; el Dashboard obtiene los nombres y carnés con `GET /api/clientes`. No simula los nombres cuando el backend falla. Advierte si falta alguno de los seis registros.
 
-El enunciado solicita `proyecto_2_<idEquipo>` para carpeta, repositorio y namespace. Kubernetes exige nombres DNS y no permite `_` en el namespace: se usa `proyecto-2-<idEquipo>`. Se conserva **`__ID_EQUIPO__`** en las plantillas; ese token tampoco es un nombre desplegable.
+El equipo confirmó el **idEquipo `glitch-tec`**. El namespace Kubernetes final es **`proyecto-2-glitch-tec`** y el repositorio final previsto es **`proyecto_2_glitch-tec`**. Por ahora se conserva el repositorio existente y la rama `project2/kubernetes`.
 
-El ID oficial aún no está confirmado. Solo si nunca se asignó uno se utilizará `glitch-tec`. La carpeta y el futuro repositorio serán `proyecto_2_<idEquipo>`; por ahora seguimos en el repositorio existente. El enunciado también menciona imágenes `usuario-<carné>`; por instrucción del equipo se usa `javierini/elquetzal-<servicio>:2.0`. Registrar esta correspondencia en las evidencias.
+El enunciado usa guiones bajos para carpeta y repositorio; Kubernetes requiere nombres DNS sin `_`, por lo que el namespace usa guiones. Los recursos, labels `team` y hostnames de los Pods ya tienen `glitch-tec`. Los 22 manifiestos finales versionados en **`k8s/` son directamente desplegables**; no requieren sustituciones ni una carpeta generada.
 
-```bash
-./scripts/configure-project.sh <id-equipo-confirmado>
-# Ejemplo exclusivamente cuando se haya confirmado el valor alternativo:
-./scripts/configure-project.sh glitch-tec
-```
+`configure-project.sh` se conserva como comprobación opcional del ID final; no genera ni modifica archivos. El flujo normal de despliegue no necesita ejecutarlo. La sincronización de ConfigMaps sigue disponible en `python3 scripts/project.py sync-configmaps` y utiliza siempre el ID final.
 
-Requiere Python 3. Valida 1-40 caracteres en minúsculas, números y guiones, con extremos alfanuméricos. Sustituye el token únicamente en `.generated/<id>/k8s/` y `.generated/<id>/gateway/nginx.conf`; conserva las plantillas versionadas. Genera también los ConfigMaps desde el SQL y nginx originales. No despliega recursos ni modifica main. Volver a configurarlo sobrescribe las copias generadas, incluyendo cambios de réplicas hechos allí.
-
-En PowerShell se puede usar `python scripts/project.py configure <id>`. En la VM Linux se utilizan los scripts Bash. Los Pods tienen `hostname: <servicio>-<id>`; se puede mostrar con `kubectl exec ... -- hostname`. El hostname de la VM se comprueba aparte, sin que los scripts cambien el sistema.
+Los Pods tienen `hostname: <servicio>-glitch-tec`; se puede mostrar con `kubectl exec ... -- hostname`. El hostname de la VM se comprueba aparte, sin que los scripts cambien el sistema. El enunciado también menciona imágenes `usuario-<carné>`; por instrucción del equipo se conservan `javierini/elquetzal-<servicio>:2.0`.
 
 ## Arquitectura
 
@@ -71,11 +65,11 @@ k8s/
   gateway/     gateway-configmap.yaml, gateway-deployment.yaml,
                gateway-nodeport.yaml, gateway-loadbalancer.yaml
 scripts/
-  configure-project.sh       genera archivos con un ID válido
+  configure-project.sh       comprueba el ID final (opcional)
   create-secret.sh           crea el Secret sin versionar credenciales
   build-push-images.sh       build local o push explícito
   validate-manifests.sh      validación estática y dry-run opcional
-  project.py                render y sincronización de ConfigMaps
+  project.py                comprobación de ID y sincronización de ConfigMaps
   prepare-secret.py         lectura y validación de credenciales
   validate-manifests.py      contratos y referencias de los YAML
   requirements.txt          PyYAML para validación
@@ -99,28 +93,22 @@ docs/INFORME_IMPLEMENTACION.md  informe y resultados reales
 | gateway | `javierini/elquetzal-gateway:2.0` | raíz, `-f gateway/Dockerfile` | 80 |
 | PostgreSQL | `postgres:16` | imagen oficial | 5432 |
 
-```bash
-DOCKERHUB_USER=javierini IMAGE_TAG=2.0 ./scripts/build-push-images.sh build
-# Después de que el responsable se autentique manualmente en Docker Hub:
-DOCKERHUB_USER=javierini IMAGE_TAG=2.0 ./scripts/build-push-images.sh push
-```
+Las siete imágenes propias `:2.0` ya fueron publicadas correctamente en Docker Hub, según confirmación del equipo. **No se deben reconstruir, modificar ni volver a publicar para esta entrega.** Las referencias de imagen en los Deployments permanecen exactamente como están en la tabla. `build-push-images.sh` se conserva como utilidad de mantenimiento; no forma parte del despliegue normal.
 
-El script no hace login ni guarda credenciales. Por defecto construye; `push` exige credenciales disponibles en la configuración local o su helper, comprueba que las siete imágenes existen y deja a Docker validar la sesión real. El gateway lleva una plantilla; Kubernetes monta el nginx configurado desde ConfigMap. Para un `nginx -t` local fuera del clúster se necesita montar la copia generada y proporcionar resolución DNS de los Services.
-
-El frontend usa build multi-stage Node 22/nginx y `npm ci`. El Node local debe cumplir `frontend/package.json` (preferir 22.22.2 o superior compatible). No cambiar el lockfile para evadir un requisito de Node.
+Kubernetes monta la configuración final de nginx desde `gateway-config-glitch-tec`. `gateway/nginx.conf` contiene los mismos DNS finales de Services. La comprobación `nginx -t` dentro del Pod se realiza en la VM, donde existen esos Services.
 
 ## Configuración y credenciales
 
-`app-config-<id>` contiene `DB_HOST=postgres-<id>`, `DB_PORT=5432`, las bases `inventario_db`, `clientes_db`, `pedidos_db`, `UMBRAL_STOCK_BAJO=10`, `INVENTARIO_URL` y `PEDIDOS_URL`. Cada backend recibe su base como `DB_NAME` mediante `configMapKeyRef`.
+`app-config-glitch-tec` contiene `DB_HOST=postgres-glitch-tec`, `DB_PORT=5432`, las bases `inventario_db`, `clientes_db`, `pedidos_db`, `UMBRAL_STOCK_BAJO=10`, `INVENTARIO_URL` y `PEDIDOS_URL`. Cada backend recibe su base como `DB_NAME` mediante `configMapKeyRef`.
 
-El Secret `db-credentials-<id>` se crea localmente con ocho claves: `POSTGRES_ADMIN_USER/PASSWORD`, `INVENTARIO_DB_USER/PASSWORD`, `CLIENTES_DB_USER/PASSWORD` y `PEDIDOS_DB_USER/PASSWORD`. Los cuatro usuarios deben ser distintos. Los Deployments usan `secretKeyRef`, mapeando `POSTGRES_ADMIN_USER` a `POSTGRES_USER` y los usuarios de servicio a `DB_USER`/`DB_PASSWORD`.
+El Secret `db-credentials-glitch-tec` se crea localmente con ocho claves: `POSTGRES_ADMIN_USER/PASSWORD`, `INVENTARIO_DB_USER/PASSWORD`, `CLIENTES_DB_USER/PASSWORD` y `PEDIDOS_DB_USER/PASSWORD`. Los cuatro usuarios deben ser distintos. Los Deployments usan `secretKeyRef`, mapeando `POSTGRES_ADMIN_USER` a `POSTGRES_USER` y los usuarios de servicio a `DB_USER`/`DB_PASSWORD`.
 
 ```bash
 mkdir -p secrets
 cp config/credentials.env.example secrets/database.secret
 chmod 600 secrets/database.secret
 nano secrets/database.secret
-./scripts/create-secret.sh <id> secrets/database.secret
+./scripts/create-secret.sh glitch-tec secrets/database.secret
 ```
 
 También acepta las ocho variables exportadas, sin archivo; tienen prioridad sobre el archivo. No usar `source`: el lector solo acepta pares `CLAVE=valor` sin ejecutar código. La plantilla no incluye contraseñas ni usuarios reales. Se recomiendan usuarios `admin`, `inventario_user`, `clientes_user`, `pedidos_user` y contraseñas distintas generadas localmente. El bootstrap ya aceptaba solo un conjunto restringido de caracteres; el backend construye una URI sin escaping. Para conservar ambos se admiten contraseñas con letras, números, `.`, `_` y `-`; una cadena aleatoria hexadecimal es compatible. No se modifica el contrato Python para esta migración.
@@ -139,11 +127,11 @@ Cambiar ConfigMaps no vuelve a sembrar un PVC inicializado. La guía incluye un 
 
 ## Gateway, Services y orden de despliegue
 
-El gateway nginx usa DNS de Services con `<id>`. Conserva `/health`, prefijos completos `/api/...` y headers Host/Real-IP/Forwarded. `proxy_pass` no añade una URI que recorte el prefijo. `/` se reenvía al Service frontend; su nginx soporta `/`, `/inventario` y `/pedidos` con fallback SPA.
+El gateway nginx usa exclusivamente DNS de Services con el sufijo `-glitch-tec`. Conserva `/health`, prefijos completos `/api/...` y headers Host/Real-IP/Forwarded. `proxy_pass` no añade una URI que recorte el prefijo. `/` se reenvía al Service frontend; su nginx soporta `/`, `/inventario` y `/pedidos` con fallback SPA.
 
 Siete Services ClusterIP: frontend 80, cinco backends 5000, PostgreSQL 5432. Un NodePort del gateway usa `80 → 80`, puerto de nodo 30080. Otro Service del gateway es LoadBalancer `8080 → 80`. Se elige 8080 porque el Traefik incluido en k3s puede ocupar 80/443. La IP externa y el acceso desde host quedan sujetos a la VM y su red; no se fija una EXTERNAL-IP. Referencia: [Networking Services de k3s](https://docs.k3s.io/networking/networking-services).
 
-Orden: confirmar nodo e ID → namespace/Secret → ConfigMaps → Service PostgreSQL/PVC/Deployment → esperar PostgreSQL → frontend/backends y ClusterIP → esperar Pods/endpoints → gateway → NodePort y LoadBalancer. El script del Secret aplica primero el namespace; la guía vuelve a aplicarlo de forma idempotente. PostgreSQL necesita su Service antes de que los initContainers intenten resolverlo.
+Orden: confirmar nodo → namespace/Secret → ConfigMaps → Service PostgreSQL/PVC/Deployment → esperar PostgreSQL → frontend/backends y ClusterIP → esperar Pods/endpoints → gateway → NodePort y LoadBalancer. El script del Secret aplica primero el namespace; la guía vuelve a aplicarlo de forma idempotente. PostgreSQL necesita su Service antes de que los initContainers intenten resolverlo.
 
 La guía copiable completa está en [docs/VALIDACION_VM.md](docs/VALIDACION_VM.md). Las capturas requeridas están en [docs/EVIDENCIAS.md](docs/EVIDENCIAS.md). Después de cambiar nginx aplicar ConfigMap y reiniciar gateway, pues nginx carga su configuración al iniciar. Después de cambiar variables de entorno aplicar ConfigMap/Secret y reiniciar los Deployments consumidores. Referencia: [ConfigMaps de Kubernetes](https://kubernetes.io/docs/concepts/configuration/configmap/).
 
@@ -153,16 +141,15 @@ La guía copiable completa está en [docs/VALIDACION_VM.md](docs/VALIDACION_VM.m
 python3 -m pip install -r scripts/requirements.txt
 ./scripts/validate-manifests.sh
 # Con kubectl y su API accesible:
-./scripts/validate-manifests.sh --kubectl <id>
+./scripts/validate-manifests.sh --kubectl
 ```
 
-La validación estática sustituye el token en memoria con `validacion-local`; no asigna un ID oficial. Verifica YAML, labels/selectors, nombres DNS, imágenes, puertos, probes reales, variables contra código, referencias ConfigMap/Secret/PVC, mounts, SQL sincronizado, fallback SPA y carnés. No prueba el clúster.
+La validación estática lee directamente los manifiestos finales de `k8s/` y exige el ID `glitch-tec`; no sustituye valores ni genera copias. Verifica YAML, labels/selectors, nombres DNS, imágenes, puertos, probes reales, variables contra código, referencias ConfigMap/Secret/PVC, mounts, SQL sincronizado, fallback SPA y carnés. No prueba el clúster.
 
 Para regenerar ConfigMaps después de modificar SQL o nginx:
 
 ```bash
 python3 scripts/project.py sync-configmaps
-./scripts/configure-project.sh <id>
 ```
 
-La compilación local de Vue y los controles estáticos se ejecutaron; consulta el informe para sus resultados y limitaciones. No se afirma que haya Pods Running, PVC Bound, endpoints, CRUD, persistencia, escalado, autoreparación o acceso de red hasta probarlos en la VM. Construcción/publicación de imágenes y confirmación del ID son preparativos adicionales, realizables fuera de la VM.
+La compilación local de Vue y los controles estáticos se ejecutaron; consulta el informe para sus resultados y limitaciones. No se afirma que haya Pods Running, PVC Bound, endpoints, CRUD, persistencia, escalado, autoreparación o acceso de red hasta probarlos en la VM. El ID y la publicación de las siete imágenes ya están confirmados por el equipo; quedan pendientes las pruebas reales de la VM y las credenciales locales de la instalación.

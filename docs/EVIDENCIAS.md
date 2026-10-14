@@ -1,12 +1,12 @@
 # Evidencias del Proyecto 2
 
-Estado inicial: **pendientes de ejecución en VM/k3s**. Cada captura debe indicar qué se hace, el comando, resultado real y qué criterio acredita. Mantener reloj del sistema y carné identificable en todas las capturas pertinentes. No mostrar passwords, tokens, kubeconfig ni YAML/JSON del Secret. Preparar al final un PDF con estas seis secciones exactamente A-F.
+Equipo **Glitch Tec**, ID `glitch-tec`, namespace `proyecto-2-glitch-tec`, repositorio final previsto `proyecto_2_glitch-tec`. Las siete imágenes `:2.0` están publicadas según confirmación del equipo; las capturas y pruebas de VM/k3s siguen pendientes. Cada captura debe indicar qué se hace, el comando, resultado real y qué criterio acredita. Mantener reloj del sistema y carné identificable en todas las capturas pertinentes. No mostrar passwords, tokens, kubeconfig ni YAML/JSON del Secret. Preparar al final un PDF con estas seis secciones exactamente A-F.
 
 ## A
 
 Manifiestos y namespace (15 puntos).
 
-- [ ] Namespace `proyecto-2-<id>` y explicación de DNS frente a `proyecto_2_<id>`.
+- [ ] Namespace `proyecto-2-glitch-tec` y explicación de DNS frente a `proyecto_2_glitch-tec`.
 - [ ] Ocho Deployments propios y namespace en los YAML.
 - [ ] Siete imágenes propias en Docker Hub `javierini`, tag 2.0; identificar carné del responsable y correspondencia con el equipo.
 - [ ] Pods Running **y Ready**, con imágenes y nombres del equipo.
@@ -45,7 +45,7 @@ Capturas sugeridas: `C01-configmap`, `C02-referencias-secret`, `C03-backend-vari
 Ciclo de vida (15 puntos).
 
 - [ ] YAML de inventario con `replicas: 3` editado.
-- [ ] `kubectl apply -f "$K8S/app/inventario-deployment.yaml"`.
+- [ ] `kubectl apply -f "k8s/app/inventario-deployment.yaml"`.
 - [ ] Tres Pods Ready y estado del Deployment.
 - [ ] Comando eliminando un Pod de inventario identificado.
 - [ ] Pod nuevo creado automáticamente por el ReplicaSet y tres Ready recuperados.

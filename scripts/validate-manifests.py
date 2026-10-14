@@ -9,7 +9,7 @@ try:
     import yaml
 except ImportError:
     raise SystemExit('Falta PyYAML: python3 -m pip install -r scripts/requirements.txt')
-from project import ROOT, TOKEN, SECRET_KEYS, generated_maps, postgres_entries, validate_id
+from project import ROOT, TEAM_ID, SECRET_KEYS, generated_maps, postgres_entries, validate_id
 
 
 def require(condition, message):
@@ -17,15 +17,15 @@ def require(condition, message):
         raise ValueError(message)
 
 
-def validate(team, directory=None):
+def validate(team=TEAM_ID, directory=None):
     validate_id(team)
+    require(team == TEAM_ID, f'El ID final de esta entrega es {TEAM_ID}.')
     sources = directory or ROOT / 'k8s'
     objects = []
     for source in sorted(sources.rglob('*.yaml')):
         raw = source.read_text(encoding='utf-8')
-        if directory:
-            require(TOKEN not in raw, f'Placeholder sin sustituir: {source}')
-        objects.extend(yaml.safe_load_all(raw.replace(TOKEN, team)))
+        require(not re.search(r'__[A-Z][A-Z0-9_]*__', raw), f'Placeholder sin sustituir: {source}')
+        objects.extend(yaml.safe_load_all(raw))
     require(all(isinstance(o, dict) for o in objects), 'Documento YAML vacío o no válido.')
     index = {(o['kind'], o['metadata']['name']): o for o in objects}
     require(len(index) == len(objects), 'Recursos duplicados.')
@@ -153,7 +153,7 @@ def validate(team, directory=None):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--team', default='validacion-local', help='Solo sustitución en memoria; no fija el ID oficial.')
+    parser.add_argument('--team', default=TEAM_ID, help='ID final confirmado: glitch-tec; no se sustituyen valores.')
     parser.add_argument('--directory', type=Path)
     args = parser.parse_args()
     try:

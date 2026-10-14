@@ -2,11 +2,11 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: postgres-init-__ID_EQUIPO__
-  namespace: proyecto-2-__ID_EQUIPO__
+  name: postgres-init-glitch-tec
+  namespace: proyecto-2-glitch-tec
   labels:
     project: el-quetzal
-    team: __ID_EQUIPO__
+    team: glitch-tec
 data:
   init-databases.sh: |
     #!/usr/bin/env bash

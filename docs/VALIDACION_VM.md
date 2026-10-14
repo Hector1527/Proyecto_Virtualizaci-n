@@ -26,46 +26,38 @@ python3 --version
 Si todavía no está clonado en la VM:
 
 ```bash
-git clone --branch project2/kubernetes https://github.com/Hector1527/Proyecto_Virtualizaci-n.git
-cd Proyecto_Virtualizaci-n
+git clone --branch project2/kubernetes https://github.com/Hector1527/Proyecto_Virtualizaci-n.git proyecto_2_glitch-tec
+cd proyecto_2_glitch-tec
 ```
 
-Si desean que la carpeta local cumpla la nomenclatura del enunciado, clonar usando `proyecto_2_<id>` como último argumento. El traslado al futuro repositorio se hace posteriormente, sin cambiar main.
+Equipo: **Glitch Tec**. ID confirmado: **`glitch-tec`**. Namespace: **`proyecto-2-glitch-tec`**. Repositorio final previsto: **`proyecto_2_glitch-tec`**. El traslado al futuro repositorio se hace posteriormente, sin cambiar main.
 
-## 2. Confirmar ID, herramientas e imágenes
+## 2. Configuración final y herramientas
 
-Confirmar el ID oficial con el equipo/docente. En los siguientes comandos sustituir `ID_CONFIRMADO` por ese valor; únicamente si nunca se asignó uno usar `glitch-tec`. No usar el token `__ID_EQUIPO__` como nombre real.
+Desde la raíz del repositorio:
 
 ```bash
-export TEAM_ID='ID_CONFIRMADO'
-export NS="proyecto-2-$TEAM_ID"
-./scripts/configure-project.sh "$TEAM_ID"
-export K8S=".generated/$TEAM_ID/k8s"
+export TEAM_ID='glitch-tec'
+export NS='proyecto-2-glitch-tec'
 ```
 
-El script rechazará `ID_CONFIRMADO` mientras no lo sustituyan (mayúsculas). El ID admite 1-40 caracteres en minúsculas, números y guiones; no empieza ni termina en guion. Las plantillas `k8s/` mantienen el token. **Todos los apply de la guía usan la copia configurada `$K8S`.**
+Los manifiestos finales ya están versionados en **`k8s/`**. Los comandos de esta guía los aplican directamente. No ejecutar ningún paso de sustitución de ID ni generar copias para desplegar. `configure-project.sh` es una comprobación opcional y no forma parte de esta secuencia.
 
-La validación necesita PyYAML. Si el sistema no permite instalar paquetes globalmente, utilizar un entorno virtual:
+La validación necesita PyYAML. Si el sistema no permite instalar paquetes globalmente, utilizar un entorno virtual local ignorado por Git:
 
 ```bash
-python3 -m venv .generated/validation-venv
-source .generated/validation-venv/bin/activate
+python3 -m venv tmp/validation-venv
+source tmp/validation-venv/bin/activate
 python3 -m pip install -r scripts/requirements.txt
 ./scripts/validate-manifests.sh
-./scripts/validate-manifests.sh --kubectl "$TEAM_ID"
+./scripts/validate-manifests.sh --kubectl
 ```
 
-`python3-venv` puede requerir instalación por el administrador de Ubuntu si no está presente. No ignorar fallos. Dry-run no crea recursos.
+`python3-venv` puede requerir instalación por el administrador de Ubuntu si no está presente. No ignorar fallos. Dry-run lee `k8s/` y no crea recursos.
 
-Las siete imágenes `javierini/elquetzal-{catalogo,clientes,inventario,pedidos,reportes,frontend,gateway}:2.0` deben estar publicadas y accesibles antes del despliegue. El responsable puede construir/publicar desde otra máquina con Docker:
+Las siete imágenes `javierini/elquetzal-{catalogo,clientes,inventario,pedidos,reportes,frontend,gateway}:2.0` ya fueron publicadas correctamente en Docker Hub según confirmación del equipo. **Usar esas imágenes sin reconstruirlas, modificarlas ni volver a publicarlas.** No se ejecuta `build-push-images.sh` durante esta entrega.
 
-```bash
-./scripts/build-push-images.sh build
-# Solo después de autenticación manual disponible:
-./scripts/build-push-images.sh push
-```
-
-El script no inicia sesión. Para el despliegue no hace falta Docker Engine en la VM; k3s descarga imágenes mediante su runtime. Las imágenes deben soportar la arquitectura del nodo (comprobar `kubectl get nodes -o wide` y `uname -m`). Si ya existe un tag 2.0 con contenido anterior, acordar su reemplazo y reiniciar los Pods con política de descarga apropiada; `IfNotPresent` conserva imágenes en caché. No sobrescribir imágenes compartidas sin coordinación del equipo.
+Para desplegar no hace falta Docker Engine en la VM; k3s descarga las imágenes mediante su runtime. Comprobar acceso desde el nodo y su arquitectura (`kubectl get nodes -o wide` y `uname -m`) si aparece un problema de descarga o arranque.
 
 ## 3. Preparar y crear Secret
 
@@ -87,10 +79,10 @@ El script valida credenciales, aplica **primero el namespace** (un Secret no pue
 ## 4. Namespace y ConfigMaps
 
 ```bash
-kubectl apply -f "$K8S/namespace.yaml"
+kubectl apply -f "k8s/namespace.yaml"
 kubectl get namespace "$NS"
 kubectl -n "$NS" get secret "db-credentials-$TEAM_ID"
-kubectl apply -f "$K8S/config"
+kubectl apply -f "k8s/config"
 kubectl -n "$NS" get configmaps
 kubectl -n "$NS" get configmap "app-config-$TEAM_ID" -o yaml
 ```
@@ -100,9 +92,9 @@ La aplicación repetida del namespace es idempotente. `get secret` sin `-o yaml/
 ## 5. PostgreSQL: Service, PVC y Deployment
 
 ```bash
-kubectl apply -f "$K8S/db/postgres-service.yaml"
-kubectl apply -f "$K8S/db/postgres-pvc.yaml"
-kubectl apply -f "$K8S/db/postgres-deployment.yaml"
+kubectl apply -f "k8s/db/postgres-service.yaml"
+kubectl apply -f "k8s/db/postgres-pvc.yaml"
+kubectl apply -f "k8s/db/postgres-deployment.yaml"
 kubectl -n "$NS" get pvc
 kubectl -n "$NS" get pods -o wide
 kubectl -n "$NS" rollout status "deployment/postgres-$TEAM_ID" --timeout=300s
@@ -117,8 +109,8 @@ No importar archivos desde una carpeta `hostPath`. El ConfigMap proyecta bootstr
 ## 6. Frontend, backends y ClusterIP
 
 ```bash
-kubectl apply -f "$K8S/app"
-kubectl apply -f "$K8S/services"
+kubectl apply -f "k8s/app"
+kubectl apply -f "k8s/services"
 kubectl -n "$NS" rollout status "deployment/frontend-$TEAM_ID" --timeout=300s
 kubectl -n "$NS" rollout status "deployment/inventario-$TEAM_ID" --timeout=300s
 kubectl -n "$NS" rollout status "deployment/clientes-$TEAM_ID" --timeout=300s
@@ -140,11 +132,11 @@ kubectl -n "$NS" get endpoints "inventario-$TEAM_ID"
 ## 7. Gateway y entradas externas
 
 ```bash
-kubectl apply -f "$K8S/gateway/gateway-configmap.yaml"
-kubectl apply -f "$K8S/gateway/gateway-deployment.yaml"
+kubectl apply -f "k8s/gateway/gateway-configmap.yaml"
+kubectl apply -f "k8s/gateway/gateway-deployment.yaml"
 kubectl -n "$NS" rollout status "deployment/gateway-$TEAM_ID" --timeout=180s
-kubectl apply -f "$K8S/gateway/gateway-nodeport.yaml"
-kubectl apply -f "$K8S/gateway/gateway-loadbalancer.yaml"
+kubectl apply -f "k8s/gateway/gateway-nodeport.yaml"
+kubectl apply -f "k8s/gateway/gateway-loadbalancer.yaml"
 kubectl -n "$NS" get all -o wide
 kubectl -n "$NS" get svc
 kubectl -n "$NS" get endpoints
@@ -250,25 +242,25 @@ Recargar Inventario desde el host y mostrar el mismo SKU, nombre, precio y stock
 
 ## 12. Escalado declarativo de inventario
 
-Las plantillas parten de una réplica. Editar **el YAML configurado** aplicado al clúster:
+Los manifiestos finales parten de una réplica. Editar **el YAML versionado** aplicado al clúster:
 
 ```bash
-nano "$K8S/app/inventario-deployment.yaml"
+nano "k8s/app/inventario-deployment.yaml"
 ```
 
 Cambiar la línea de nivel Deployment de `replicas: 1` a `replicas: 3`. Guardar y mostrar el archivo editado en la captura:
 
 ```bash
-grep -n 'replicas:' "$K8S/app/inventario-deployment.yaml"
+grep -n 'replicas:' "k8s/app/inventario-deployment.yaml"
 date
-kubectl apply -f "$K8S/app/inventario-deployment.yaml"
+kubectl apply -f "k8s/app/inventario-deployment.yaml"
 kubectl -n "$NS" rollout status "deployment/inventario-$TEAM_ID" --timeout=300s
 kubectl -n "$NS" get deployment "inventario-$TEAM_ID"
 kubectl -n "$NS" get pods -l "app=inventario,team=$TEAM_ID" -o wide
 kubectl -n "$NS" get endpoints "inventario-$TEAM_ID"
 ```
 
-Capturar YAML, `apply` y tres Pods Ready. No usar `kubectl scale` como prueba principal, ni crear otro Deployment. No ejecutar `configure-project.sh` después de editar esta copia durante la prueba: volvería a generarla desde la plantilla de una réplica. Para conservar permanentemente las tres réplicas, editar también la plantilla correspondiente en la rama, después de la demostración.
+Capturar YAML, `apply` y tres Pods Ready. No usar `kubectl scale` como prueba principal ni crear otro Deployment. Se edita directamente `k8s/app/inventario-deployment.yaml`; no hay una copia generada intermedia. Conservar el cambio durante la prueba y volver a una réplica editando y aplicando el mismo archivo cuando hayan terminado las capturas.
 
 ## 13. Autoreparación de inventario
 
@@ -393,9 +385,9 @@ kubectl -n "$NS" get events --sort-by=.metadata.creationTimestamp
 **ConfigMap actualizado pero comportamiento antiguo:** nginx carga al iniciar y las variables de entorno se leen al crear el contenedor. Aplicar el ConfigMap y reiniciar consumidores:
 
 ```bash
-kubectl apply -f "$K8S/gateway/gateway-configmap.yaml"
+kubectl apply -f "k8s/gateway/gateway-configmap.yaml"
 kubectl -n "$NS" rollout restart "deployment/gateway-$TEAM_ID"
 kubectl -n "$NS" rollout status "deployment/gateway-$TEAM_ID" --timeout=180s
 ```
 
-No regenerar `$K8S` durante la prueba de tres réplicas sin conservar el cambio. Para registrar modificaciones permanentes usar las plantillas versionadas y una nueva configuración controlada.
+Las modificaciones de la prueba de réplicas se hacen directamente en el YAML versionado de `k8s/`. La comprobación opcional del ID no modifica archivos ni sobrescribe esas réplicas.

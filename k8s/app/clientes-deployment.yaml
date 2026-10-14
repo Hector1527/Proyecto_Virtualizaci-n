@@ -1,28 +1,28 @@
-# Template: render with scripts/configure-project.sh before applying.
+# Final manifest: apply directly from k8s/ for Glitch Tec (glitch-tec).
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: clientes-__ID_EQUIPO__
-  namespace: proyecto-2-__ID_EQUIPO__
+  name: clientes-glitch-tec
+  namespace: proyecto-2-glitch-tec
   labels:
     app: clientes
     project: el-quetzal
-    team: __ID_EQUIPO__
+    team: glitch-tec
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: clientes
       project: el-quetzal
-      team: __ID_EQUIPO__
+      team: glitch-tec
   template:
     metadata:
       labels:
         app: clientes
         project: el-quetzal
-        team: __ID_EQUIPO__
+        team: glitch-tec
     spec:
-      hostname: clientes-__ID_EQUIPO__
+      hostname: clientes-glitch-tec
       containers:
       - name: clientes
         image: javierini/elquetzal-clientes:2.0
@@ -63,27 +63,27 @@ spec:
         - name: DB_HOST
           valueFrom:
             configMapKeyRef:
-              name: app-config-__ID_EQUIPO__
+              name: app-config-glitch-tec
               key: DB_HOST
         - name: DB_PORT
           valueFrom:
             configMapKeyRef:
-              name: app-config-__ID_EQUIPO__
+              name: app-config-glitch-tec
               key: DB_PORT
         - name: DB_NAME
           valueFrom:
             configMapKeyRef:
-              name: app-config-__ID_EQUIPO__
+              name: app-config-glitch-tec
               key: CLIENTES_DB_NAME
         - name: DB_USER
           valueFrom:
             secretKeyRef:
-              name: db-credentials-__ID_EQUIPO__
+              name: db-credentials-glitch-tec
               key: CLIENTES_DB_USER
         - name: DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: db-credentials-__ID_EQUIPO__
+              name: db-credentials-glitch-tec
               key: CLIENTES_DB_PASSWORD
       initContainers:
       - name: wait-postgres
@@ -97,12 +97,12 @@ spec:
         - name: DB_HOST
           valueFrom:
             configMapKeyRef:
-              name: app-config-__ID_EQUIPO__
+              name: app-config-glitch-tec
               key: DB_HOST
         - name: DB_PORT
           valueFrom:
             configMapKeyRef:
-              name: app-config-__ID_EQUIPO__
+              name: app-config-glitch-tec
               key: DB_PORT
         resources:
           requests:

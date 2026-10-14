@@ -1,28 +1,28 @@
-# Template: render with scripts/configure-project.sh before applying.
+# Final manifest: apply directly from k8s/ for Glitch Tec (glitch-tec).
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: reportes-__ID_EQUIPO__
-  namespace: proyecto-2-__ID_EQUIPO__
+  name: reportes-glitch-tec
+  namespace: proyecto-2-glitch-tec
   labels:
     app: reportes
     project: el-quetzal
-    team: __ID_EQUIPO__
+    team: glitch-tec
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: reportes
       project: el-quetzal
-      team: __ID_EQUIPO__
+      team: glitch-tec
   template:
     metadata:
       labels:
         app: reportes
         project: el-quetzal
-        team: __ID_EQUIPO__
+        team: glitch-tec
     spec:
-      hostname: reportes-__ID_EQUIPO__
+      hostname: reportes-glitch-tec
       containers:
       - name: reportes
         image: javierini/elquetzal-reportes:2.0
@@ -63,10 +63,10 @@ spec:
         - name: INVENTARIO_URL
           valueFrom:
             configMapKeyRef:
-              name: app-config-__ID_EQUIPO__
+              name: app-config-glitch-tec
               key: INVENTARIO_URL
         - name: PEDIDOS_URL
           valueFrom:
             configMapKeyRef:
-              name: app-config-__ID_EQUIPO__
+              name: app-config-glitch-tec
               key: PEDIDOS_URL

@@ -1,8 +1,8 @@
-# Template: render with scripts/configure-project.sh before applying.
+# Final manifest: apply directly from k8s/ for Glitch Tec (glitch-tec).
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: proyecto-2-__ID_EQUIPO__
+  name: proyecto-2-glitch-tec
   labels:
     project: el-quetzal
-    team: __ID_EQUIPO__
+    team: glitch-tec
